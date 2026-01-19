@@ -346,7 +346,7 @@ async def buy_token(
     slippage: float = 0.25,
     max_retries=5,
 ) -> bool:
-    private_key = base58.b58decode("3N3Lm7KEu1QdPTCuYZSvdSXEgEcEEk8b77C37X2VP8wrJHgGFLwzoKPsYxZtDCew2zr27G1EuJxWneqZzUzfFqfz")  #(os.environ.get("SOLANA_PRIVATE_KEY"))
+    private_key = base58.b58decode(os.environ.get("SOLANA_PRIVATE_KEY", ""))
     payer = Keypair.from_bytes(private_key)
 
     async with AsyncClient(RPC_ENDPOINT) as client:
@@ -711,9 +711,7 @@ async def main():
         print(
             f"Buying {amount:.6f} SOL worth of the new token with {slippage * 100:.1f}% slippage tolerance..."
         )
-        private_key = base58.b58decode(
-            "3N3Lm7KEu1QdPTCuYZSvdSXEgEcEEk8b77C37X2VP8wrJHgGFLwzoKPsYxZtDCew2zr27G1EuJxWneqZzUzfFqfz"
-        )  #(os.environ.get("SOLANA_PRIVATE_KEY"))
+        private_key = base58.b58decode(os.environ.get("SOLANA_PRIVATE_KEY"))
         payer = Keypair.from_bytes(private_key)
         async with AsyncClient(RPC_ENDPOINT) as client:
             starting_balance = await client.get_balance(payer.pubkey())
