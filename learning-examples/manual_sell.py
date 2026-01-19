@@ -5,6 +5,7 @@ import struct
 
 import base58
 from construct import Flag, Int64ul, Struct
+from dotenv import load_dotenv
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed
 from solana.rpc.types import TxOpts
@@ -41,7 +42,18 @@ LAMPORTS_PER_SOL = 1_000_000_000
 UNIT_PRICE = 10_000_000
 UNIT_BUDGET = 100_000
 
-RPC_ENDPOINT = "https://solana-mainnet.core.chainstack.com/c42fc24a4f7af10e9be224e47c3ddda0"  #os.environ.get("SOLANA_NODE_RPC_ENDPOINT")
+load_dotenv()
+
+RPC_ENDPOINT = os.environ.get("SOLANA_NODE_RPC_ENDPOINT")
+if not RPC_ENDPOINT:
+    raise ValueError("Missing SOLANA_NODE_RPC_ENDPOINT")
+
+
+def _get_private_key_bytes() -> bytes:
+    private_key = os.environ.get("SOLANA_PRIVATE_KEY")
+    if not private_key:
+        raise ValueError("Missing SOLANA_PRIVATE_KEY")
+    return base58.b58decode(private_key)
 
 
 class BondingCurveState:
@@ -254,7 +266,7 @@ async def sell_token(
     slippage: float = 0.25,
     max_retries=5,
 ):
-    private_key = base58.b58decode(os.environ.get("SOLANA_PRIVATE_KEY", ""))
+    private_key = _get_private_key_bytes()
     payer = Keypair.from_bytes(private_key)
 
     async with AsyncClient(RPC_ENDPOINT) as client:

@@ -9,6 +9,7 @@ import time
 import base58
 import websockets
 from construct import Flag, Int64ul, Struct
+from dotenv import load_dotenv
 from solana.rpc.async_api import AsyncClient
 from solana.rpc.commitment import Confirmed
 from solana.rpc.types import TxOpts
@@ -55,9 +56,20 @@ SYSTEM_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM = Pubkey.from_string(
 SOL = Pubkey.from_string("So11111111111111111111111111111111111111112")
 LAMPORTS_PER_SOL = 1_000_000_000
 
+load_dotenv()
+
 # RPC ENDPOINTS
-RPC_ENDPOINT = "https://solana-mainnet.core.chainstack.com/c42fc24a4f7af10e9be224e47c3ddda0"  #os.environ.get("SOLANA_NODE_RPC_ENDPOINT")
-RPC_WEBSOCKET = "wss://solana-mainnet.core.chainstack.com/c42fc24a4f7af10e9be224e47c3ddda0"
+RPC_ENDPOINT = os.environ.get("SOLANA_NODE_RPC_ENDPOINT")
+RPC_WEBSOCKET = os.environ.get("SOLANA_NODE_WSS_ENDPOINT")
+if not RPC_ENDPOINT or not RPC_WEBSOCKET:
+    raise ValueError("Missing SOLANA_NODE_RPC_ENDPOINT or SOLANA_NODE_WSS_ENDPOINT")
+
+
+def _get_private_key_bytes() -> bytes:
+    private_key = os.environ.get("SOLANA_PRIVATE_KEY")
+    if not private_key:
+        raise ValueError("Missing SOLANA_PRIVATE_KEY")
+    return base58.b58decode(private_key)
 
 
 class BondingCurveState:
@@ -346,7 +358,7 @@ async def buy_token(
     slippage: float = 0.25,
     max_retries=5,
 ) -> bool:
-    private_key = base58.b58decode(os.environ.get("SOLANA_PRIVATE_KEY", ""))
+    private_key = _get_private_key_bytes()
     payer = Keypair.from_bytes(private_key)
 
     async with AsyncClient(RPC_ENDPOINT) as client:
@@ -711,7 +723,7 @@ async def main():
         print(
             f"Buying {amount:.6f} SOL worth of the new token with {slippage * 100:.1f}% slippage tolerance..."
         )
-        private_key = base58.b58decode(os.environ.get("SOLANA_PRIVATE_KEY"))
+        private_key = _get_private_key_bytes()
         payer = Keypair.from_bytes(private_key)
         async with AsyncClient(RPC_ENDPOINT) as client:
             starting_balance = await client.get_balance(payer.pubkey())
