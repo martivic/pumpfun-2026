@@ -10,15 +10,29 @@ This is a trading bot for pump.fun and letsbonk.fun platforms that snipes new to
 - `logs/` - Log files from bot executions
 - `idl/` - Interface definition files for Solana programs
 
-## Bash Commands & Development
+## How to Use the Project Docs
+
+- `AGENTS.md` defines development rules and safety constraints to follow.
+- `TASKS.md` lists active task briefs with scope and constraints.
+- `CLAUDE.md` is the general project guide and command reference.
+
+When working with an agent:
+1) Start from `TASKS.md` for what to build.
+2) Follow `AGENTS.md` for how to build it safely.
+3) Use `CLAUDE.md` for setup and command reminders.
+
+## Task Briefs (Required Reading)
+
+Before making changes, read `TASKS.md` and follow the scope/constraints for the
+active task brief. Do not start work on a task until those constraints are
+understood and accepted.
+
+## Commands & Development
 
 ### Setup Commands
 ```bash
 # Install dependencies
 uv sync
-
-# Activate virtual environment (Unix/macOS)
-source .venv/bin/activate
 
 # Activate virtual environment (Windows)
 .venv\Scripts\activate
@@ -56,6 +70,7 @@ uv run learning-examples/compute_associated_bonding_curve.py
 # Listen to new tokens
 uv run learning-examples/listen-new-tokens/listen_logsubscribe_abc.py
 uv run learning-examples/listen-new-tokens/compare_listeners.py
+uv run learning-examples/listen-new-tokens/listen_pumpportal.py
 ```
 
 ### Code Quality
@@ -75,7 +90,7 @@ ruff check --fix
 ### Python Style (Ruff Configuration)
 - **Line length**: 88 characters
 - **Indentation**: 4 spaces
-- **Target Python**: 3.11+
+- **Target Python**: 3.9+
 - **Quote style**: Double quotes
 - **Import sorting**: Enabled
 
@@ -107,6 +122,8 @@ ruff check --fix
 - Bot configurations in YAML files under `bots/`
 - Platform detection from config files
 - Validation of platform-listener combinations
+ - Default test buy amount in `learning-examples/manual_buy.py` and
+   `learning-examples/mint_and_buy_v2.py` is `0.000001` SOL
 
 ### Logging
 - Timestamped log files in `logs/` directory
@@ -163,3 +180,11 @@ ruff check --fix
 - Comprehensive input validation
 - Error handling to prevent crashes
 - Rate limiting and retry mechanisms
+
+## Environment Variables
+
+```env
+SOLANA_NODE_WSS_ENDPOINT=wss://...
+SOLANA_NODE_RPC_ENDPOINT=https://...
+SOLANA_PRIVATE_KEY=your_private_key_here
+```

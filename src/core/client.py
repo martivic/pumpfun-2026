@@ -304,7 +304,12 @@ class SolanaClient:
         return None
 
     async def get_buy_transaction_details(
-        self, signature: str, mint: Pubkey, sol_destination: Pubkey
+        self,
+        signature: str,
+        mint: Pubkey,
+        sol_destination: Pubkey,
+        retries: int = 3,
+        delay_sec: float = 0.5,
     ) -> tuple[int | None, int | None]:
         """Get actual tokens received and SOL spent from a buy transaction.
 
@@ -320,7 +325,13 @@ class SolanaClient:
         Returns:
             Tuple of (tokens_received_raw, sol_spent_lamports), or (None, None)
         """
-        result = await self._get_transaction_result(signature)
+        result = None
+        for attempt in range(retries):
+            result = await self._get_transaction_result(signature)
+            if result:
+                break
+            if attempt < retries - 1:
+                await asyncio.sleep(delay_sec)
         if not result:
             return None, None
 

@@ -2,7 +2,7 @@
 # Carefully review and adjust values to match your trading strategy and risk tolerance.
 
 # Bot identification and connection settings
-name: "bot-sniper-3"
+name: "bot-sniper-6"
 env_file: ".env"
 rpc_endpoint: "${SOLANA_NODE_RPC_ENDPOINT}"
 wss_endpoint: "${SOLANA_NODE_WSS_ENDPOINT}"
@@ -24,20 +24,29 @@ geyser:
 # Control trade execution: amount of SOL per trade and acceptable price deviation
 trade:
   buy_amount: 0.00001 # Amount of SOL to spend when buying (in SOL)
-  buy_slippage: 0.3 # Maximum acceptable price deviation (0.3 = 30%)
-  sell_slippage: 0.3
+  buy_slippage: 0.1 # Maximum acceptable price deviation (0.1 = 10%)
+  sell_slippage: 0.1
 
   # Exit strategy configuration
-  exit_strategy: "time_based" # Options: "time_based", "tp_sl", "manual"
-  #take_profit_percentage: 0.1 # Take profit at 10% gain (0.1 = 10%)
-  #stop_loss_percentage: 0.1 # Stop loss at 10% loss (0.1 = 10%)
-  max_hold_time: 15 # Maximum hold time in seconds for TP/SL strategy, for time_based - see wait_after_buy
-  #price_check_interval: 2 # Check price every 2 seconds
 
+  # Exit strategy configuration
+  # Options: "time_based", "tp_sl", "take_profit", "stop_loss", "trailing_stop", "event_based"
+
+  exit_strategy: "time_based"
+
+  # Percent values as fractions (0.006 = 0.6%)
+  take_profit_percentage: 0.004
+  stop_loss_percentage: 0.0035
+
+  # Time values in seconds (make units explicit)
+
+  max_hold_time: 30
+  price_check_interval: 5
+ 
   # EXTREME FAST mode configuration
   # When enabled, skips waiting for the bonding curve to stabilize and RPC price check.
   # The bot buys the specified number of tokens directly, making the process faster but less precise.
-  extreme_fast_mode: true
+  extreme_fast_mode: false
   extreme_fast_token_amount: 20 # Amount of tokens to buy
 
 # Priority fee configuration
@@ -46,9 +55,9 @@ trade:
 priority_fees:
   enable_dynamic: false # Use latest transactions to estimate required fee (getRecentPrioritizationFees)
   enable_fixed: true # Use fixed amount below
-  fixed_amount: 400_000 # Base fee in microlamports
+  fixed_amount: 50_000 # Base fee in microlamports
   extra_percentage: 0.0 # Percentage increase on riority fee regardless of the calculation method (0.1 = 10%)
-  hard_cap: 400_000 # Maximum allowable fee in microlamports to prevent excessive spending
+  hard_cap: 50_000 # Maximum allowable fee in microlamports to prevent excessive spending
 
 # Compute unit limits for transaction processing
 # Operation-specific defaults are used if not specified: buy=100K, sell=60K
@@ -69,17 +78,18 @@ compute_units:
 filters:
   match_string: null # Only process tokens with this string in name/symbol
   bro_address: null # Only trade tokens created by this user address
-  listener_type: "blocks" # Method for detecting new tokens: "logs", "blocks", or "geyser"
-  max_token_age: 0.001 # Maximum token age in seconds for processing
+  listener_type: "logs" # Method for detecting new tokens: "logs", "blocks", or "geyser"
+  max_token_age: 1.0 # Maximum token age in seconds for processing
+  max_top_holder_pct: 90.0 # Skip tokens if top holder >= this percentage
   marry_mode: false # Only buy tokens, skip selling
   yolo_mode: false # Continuously trade tokens
 
 # Retry and timeout settings
 retries:
-  max_attempts: 1 # Number of attempts for transaction submission
-  wait_after_creation: 15 # Seconds to wait after token creation (only if EXTREME FAST is disabled)
-  wait_after_buy: 15 # Holding period after buy transaction
-  wait_before_new_token: 15 # Pause between token trades
+  max_attempts: 2 # Number of attempts for transaction submission
+  wait_after_creation: 20 # Seconds to wait after token creation (only if EXTREME FAST is disabled)
+  wait_after_buy: 30 # Holding period after buy transaction
+  wait_before_new_token: 30 # Pause between token trades
 
 # Token and account management
 cleanup:

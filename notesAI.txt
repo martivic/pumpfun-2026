@@ -1,0 +1,230 @@
+Purpose
+Track conclusions and results from testing. Update only after test runs.
+
+Task 2 Results
+Run #1 (manual_buy.py):
+- Skipped several tokens due to top-holder threshold (> 90%).
+- Token: BOOB (Tap this to see), mint 5VApqGM51DD5PouZZ9FoYYzuPN1vvyhb84difLH7pump.
+- Buy tx: LNgBd596HkwLxpuUKs4QMo5JrMVDBoNXEn3bAaEtU4nGhzQ84syP4gW4xruptqAaNHJzPRPdKVBbq1xaBNt8Tc9.
+- Sell tx: 2jcjn86CBThsfoFM15PhXV1bNwa2CNQzhSksCJKHSWGTwn2t7TaS6ptdBLvahLU8UQhkBQhH55EYKgpti6wM8SMj.
+- Auto-sell confirmed; SSL transport "event loop is closed" error after completion.
+
+Run #2 (manual_buy.py):
+- Skipped several tokens due to top-holder threshold (> 90%).
+- Token: lopp, mint 9U1CwBNe3eepNn3245G91sU1mhv78ECFYJEXsCV5pump.
+- Top-holder check passed (77.63%), but skipped buy due to price cap:
+  0.0000000667 > MAX_PRICE_SOL 0.0000000500.
+- No buy/sell tx; SSL transport "event loop is closed" error after completion.
+
+Task 4 Attempt
+- PumpPortal listener ran for 10 minutes but failed to log trends.
+- Repeated error: 'charmap' codec can't encode character U+1F3AF.
+- No trend words captured; needs ASCII-safe logging before retry.
+
+Task 4 Results (PumpPortal trend scan)
+- Log: logs/pumpportal_trends_20260117_122948.log (10 min).
+- Tokens captured: 252 (UTF-16 log; parsed successfully).
+- Top words/themes (counts): live (31), shilling (26), dev (17), wojak (15),
+  obama (14), minister (14), miche (12), good (6), shit (6), tata (6), ath (6).
+- Top symbols (counts): GSD (26), OMARJAK (18), Jingle (16), WASB (14),
+  Miche (12), HAPPY (10), READ (6), FRINK (5), READTWEET (5), Back (3).
+- Repeated phrases: "We're So Back / It's So Over", "dev live shilling",
+  "TATA ATH 2M", "Wojak Minister", "Miche Obama".
+- Outlook: Favor trend-based themes around back/over cycles, dev-live-shill,
+  wojak/political names, and ATH-style phrasing for mint_and_buy_v2 metadata.
+
+Task 4 Results (PumpPortal trend scan #2)
+- Run length: 10 minutes (listener timed out after capture window).
+- New recurring themes spotted in output:
+  - Hex color codes: 14F195, 579BCA (multiple repeats).
+  - Bull/Bear motifs: "The White Bull", "The Brown Bear", "the bear", "Solana Bull".
+  - Market mood: "REKT", "We All Going Broke", "RETURN TO PUMP".
+  - Creator brands/memes: OnlyDevs, CoreView, CryptoFlashMeme.
+- Proposed next trend filter for Task 6: use "bear" (captures bear/bull cycle clones).
+
+Task 6 Run #1 (bot-sniper-3a-trends)
+- Launched via pump_bot; only bot-sniper-3a-trends enabled.
+- Observed UnicodeEncodeError from Windows console when token names included
+  non-ASCII symbols (e.g., "9945FF → 14F195").
+- No match/execute logs captured in the 4-minute window; process may have
+  continued after the CLI timeout.
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 9ZmmpXbCBFP73WDrW38B7VChQjxyKRYYvK9mk3Eipump (Mountains)
+- Buy tx: 3SPxHG5xsuCSUv1XUDF7r6qGFeDCyA3vmVj5pw486b3LggNT3QwcL7juTQViKoBKKUNbKPv6iEfeoRnmgeY3yb6a
+- Sell tx: 4KmJGb6GJ4QA4joyDBmocFtB8sFwCqYuMfEiLkmui3EGecAeKbTTMYwpNDBM2Xy9DNPKXk7rMvonqpMgz4pMMbAp
+- Net SOL change: -0.002080667 SOL (-2080667 lamports)
+- Note: SSL transport "event loop is closed" error after completion.
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 6RCdJUSYfjqtwXZD4GexjwKSgpAnVqeje4uGBHCopump (baby)
+- Buy tx: 3kHV2KTE4jiLhs47eBtNunEY5FAVgwdmbMDGijU2hGhNSCJvDp3zJRzh71pUymV4aSuJMEU4CWXDkqNBNwH8njtW
+- Sell: skipped (token balance 0.0)
+- Net SOL change: -0.000005403 SOL (-5403 lamports)
+- Note: SSL transport "event loop is closed" error after completion.
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: HpHBViwVooMYrZKWsYQQVmdpVuSK8zCKeWbQFnc8pump (trump)
+- Buy tx: 3BNtv4HC8awP2pUp2j9wg7vvxjgGygjfX338gK1Y5L93QHAR4CPyGGnCmQRHoyUSJkjmVx8ofnUKko7LnLJdXiVR
+- Sell: skipped (token balance 0.0)
+- Net SOL change: -0.000005403 SOL (-5403 lamports)
+- Note: SSL transport "event loop is closed" error after completion.
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 7LgmXLLvXDFZmvRvpSqA5ufs8xTdGaqqi93mTk42pump (Allon bot)
+- Buy tx: 3YpJEuWxq5CtKJhzyFVAGmXau3ye2A214K6h6SemVHs25cRCH1Ss8cUgZrmQLZeUimH1VXxtDjuYN8MyYswxM97z
+- Sell: skipped (token balance 0.0)
+- Net SOL change: -0.000005403 SOL (-5403 lamports)
+- Note: SSL transport "event loop is closed" error after completion.
+
+Task 2 Result (manual_buy run batch - 3 runs)
+- Run 1: websocket closed (1009 message too big); no token processed.
+- Run 2: Mint 9A3qgQodu56D8KvuQdjPKP6foA4JzFkXeKF71WX2pump (Street King Leo)
+  Buy tx: 282WU8hVu6GpwXMyUn94xubPSyfz5HdaRixPy1YeHS1SsieVymRXHZjERC8Wmj6SbxpKjuvmNAwZqw8GDqKrfyJN
+  Buy status check errored (EncodedConfirmedTransaction meta access); no sell.
+- Run 3: Mint Gc8uhQK1HpGMynXbqHN6PcnYtfToP8p8XM86HjJvpump (whooo/ghost)
+  Buy tx: 2c7NbSLDzk1UVwZ5tm6QmqQEPoJPZBhrFiuDYMgexdx7sDBp7uBHtM1yMeWZxQtMcbP3ciWpkngwVhno6qb2fs25
+  Buy status check errored (EncodedConfirmedTransaction meta access); no sell.
+
+Task 2 Result (manual_buy run batch - 3 runs, buy=0.0001 SOL, sell slip=35%)
+- Run 1: Mint 6NBjKpezwJXVrxBmUtuwdr5znen2LsJSkG5bDL7cpump (2016/MTS)
+  Skipped buy: max SOL cost 0.0001300000 > cap 0.0000020000.
+- Run 2: Mint 6mbtMBuHgtNrmEyRdkZZQtiBxawNatSVaJP1eSBSpump (New love Cz)
+  Skipped buy: max SOL cost 0.0001300000 > cap 0.0000020000.
+- Run 3: Mint EEtHtWHUZW93QBYaJXGLHk4YXtBR7HcCdbuXLQmcpump (baby)
+  Skipped buy: max SOL cost 0.0001300000 > cap 0.0000020000.
+- Note: SSL transport "event loop is closed" after completion.
+
+Task 2 Result (manual_buy run batch - 3 runs, buy=0.0001 SOL, max cost cap 0.00015)
+- Run 1: Mint 54EN2dKy31MPgXdyHQAztFYbbFtAY2UkPUAxhuHipump (Bopity/BOOP)
+  Buy tx: 5n8VerHvjfKXwL5CxsmxYXPUD9XsojUnxtt4sz2V7MnYACb1gg4V3H1FxYwTiBcNTa9vG7V5GPkodHx5wbVYCWB2
+  Sell tx: 4nHcsxE8we1Pd3jT7iwnucrvgv9p3VENdaX8z9zC2CjSiWz6oTE3HUwnc1CsXPUaFmmhf8t5HY1RcaVLsVvg1Hvq
+  Net SOL change: -0.002168681 SOL (-2168681 lamports)
+- Run 2: Mint DY81FjzVUzEzSpTT53DnEg3NtFtBcGVdHNgnf3wppump (BLUEBONK/BB)
+  Buy tx: 5TK6Nsqz6ww4KRrdqgj4MmWtZKAJK25v9DYSC9Tc1rEiZqRb5wabvECtvZEbWRzJenVWe76rpUCQ6UcZsPTqtxC
+  Sell tx: 4qMMGA5cBSW16aErZS7Zxy9n2GVmkWrPGQ7XgkBfnfwdLjqsc2wLw5d8LDkcukXo3Auqt3wyE9y2MNvrjVV6vdq4
+  Net SOL change: -0.002198375 SOL (-2198375 lamports)
+- Run 3: Websocket closed (1009 message too big) after multiple skips; no token processed.
+- Note: SSL transport "event loop is closed" after completion.
+
+Task 2 Result (manual_buy run batch - 3 runs, hold=10s)
+- Run 1: Mint 5vvvadpUZbMyqX5tK4fYuMvXPRftaY1y916TVGTxpump (AIPumpFun)
+  Buy attempt failed due to RPC 429 while fetching fee recipient.
+- Run 2: Mint 3gcu1ZAWCnxuxuj8YSvTKfZX4JqEedZCnt3K5Qcapump (dead deer.)
+  Buy attempt failed due to RPC 429 while fetching latest blockhash.
+- Run 3: Mint HFCZefRaAR6KCdUGo5JeUTtYmV1WADmX9znQLaidpump (Kalaallit Coin)
+  Buy tx: 2PmoffMRNFhnMFtM7QN7z71TfqaoGB2tCC1Nbpq4Dr6uGUyQgQefvzdbEBbribndQ7JQxoMhEm8Fr3EUqS6RjySC
+  Sell tx: 2DGBFhJbkcaHydX6mkBQfpxHSHrbP4CXXefPknzXBFy8bbLSR9rE7qhGgsXc3txgSCTkQP6vMUuiAb9VHcoceSzU
+  Net SOL change: -0.002152044 SOL (-2152044 lamports)
+- Note: SSL transport "event loop is closed" after completion.
+
+Task 2 Result (manual_buy run batch - 3 runs, hold=10s, buy=0.0001 SOL)
+- Run 1: Mint 5vvvadpUZbMyqX5tK4fYuMvXPRftaY1y916TVGTxpump (AIPumpFun)
+  Buy attempt failed due to RPC 429 while fetching fee recipient.
+- Run 2: Mint 3gcu1ZAWCnxuxuj8YSvTKfZX4JqEedZCnt3K5Qcapump (dead deer.)
+  Buy attempt failed due to RPC 429 while fetching latest blockhash.
+- Run 3: Mint HFCZefRaAR6KCdUGo5JeUTtYmV1WADmX9znQLaidpump (Kalaallit Coin)
+  Buy tx: 2PmoffMRNFhnMFtM7QN7z71TfqaoGB2tCC1Nbpq4Dr6uGUyQgQefvzdbEBbribndQ7JQxoMhEm8Fr3EUqS6RjySC
+  Sell tx: 2DGBFhJbkcaHydX6mkBQfpxHSHrbP4CXXefPknzXBFy8bbLSR9rE7qhGgsXc3txgSCTkQP6vMUuiAb9VHcoceSzU
+  Net SOL change: -0.002152044 SOL (-2152044 lamports)
+- Note: SSL transport "event loop is closed" after completion.
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 9ZmmpXbCBFP73WDrW38B7VChQjxyKRYYvK9mk3Eipump
+- Net SOL change: -0.002080667 SOL (-2080667 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: LMumZNBrPH8ywpY6nxa6vyRf5xME7yg8q7zS21xpump
+- Net SOL change: -0.002080310 SOL (-2080310 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: Be23w6RLgfVFLqgdk5yrVLiHhxbrh68PpNpVCPYrpump
+- Net SOL change: -0.000005403 SOL (-5403 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 6RCdJUSYfjqtwXZD4GexjwKSgpAnVqeje4uGBHCopump
+- Net SOL change: -0.000005403 SOL (-5403 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: HpHBViwVooMYrZKWsYQQVmdpVuSK8zCKeWbQFnc8pump
+- Net SOL change: -0.000005403 SOL (-5403 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 7LgmXLLvXDFZmvRvpSqA5ufs8xTdGaqqi93mTk42pump
+- Net SOL change: -0.000005403 SOL (-5403 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 5x9FydMJgGnHd491kjXA7g9EdW5gLiLxtwVEGag6pump
+- Net SOL change: -0.002080753 SOL (-2080753 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 54EN2dKy31MPgXdyHQAztFYbbFtAY2UkPUAxhuHipump
+- Net SOL change: -0.002168681 SOL (-2168681 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: DY81FjzVUzEzSpTT53DnEg3NtFtBcGVdHNgnf3wppump
+- Net SOL change: -0.002198375 SOL (-2198375 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 2kLxVo3sF8jbYAYPNEKwLe9mCgAxmyXDyjsPsDL6pump
+- Net SOL change: -0.002161993 SOL (-2161993 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: HFCZefRaAR6KCdUGo5JeUTtYmV1WADmX9znQLaidpump
+- Net SOL change: -0.002152044 SOL (-2152044 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 6AHfAvmonJg7LwHJkTEhmSoGoF9nAvtGVTZ2TGi7mqwK
+- Net SOL change: -0.002206913 SOL (-2206913 lamports)
+
+Task 8 Result (bot-sniper-2a fee test)
+- Log: logs/bot-sniper-2a_20260117_213950.log
+- Ran ~21:39:50–21:57:14; detected many new tokens via logs listener.
+- No buy/sell actions occurred in this window (no trading.platform_aware entries).
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: EqLtknczfMdiC8j1TEjk4Vda2Ltys46ehbB8vHS2pump
+- Net SOL change: -0.002083533 SOL (-2083533 lamports)
+
+Task 2 Result (manual_buy auto-sell)
+- Mint: 3UFqeChc7WAfuFp8MhZTAfQoX9TGmLuf8ueBeWvApump
+- Net SOL change: -0.002085452 SOL (-2085452 lamports)
+
+Task 3 Result (bot-sniper-3 blocks run)
+- Log: logs/bot-sniper-3_20260119_081618.log
+- Token: PLEASEBRO, mint FiQv8Y2mV33vAW3PoJYxnmFVD9hJM6aEWNAg8eZQpump
+- Buy tx: 4sJzjNR5syXP1PFPFCgcXtNM66WdtnPDv7yVDgwvkhPZeLxTnHwBnFAH5y4szBZQS13xTpe2Sz3fTrUMXUdRMjKq
+- Sell tx: WQbeeKxn6Qp3URzukY34kQqA8b7eAhsp7ZWGEUg5PSZNQp3nDQvvDMEVX9KXrAkepTmLuV2YQs9NbPPNwb1yJfB
+- Result: Buy/sell succeeded; ATA cleanup completed after sell.
+
+Task 3 Result (bot-sniper-3 blocks run)
+- Log: logs/bot-sniper-3_20260119_085753.log
+- Token: slowcook, mint 8GoMXg93TxxZMAq49p2HeczjqPcTSBpsS25g5x63pump
+- Buy tx: 4GyCjkYZurBiL25ErCyXPyySV8ohHndkbBHTo6mBWnKLnXvZogZEUFbuswZrvfiTgT522wUQgLfEhkJG2B5hSUwS
+- Sell tx: 2yxNMsZ2t73oMqg7jZ2ZieGxDmKJDm8oE83d7WSb3XK6SFgVLGWdLQVpy2obfbBiUj81zSetmCzB3QwWL6dizjiW
+- Buy fee: 0.000045 SOL (priority 0.00004 SOL), CU 79,267.
+- Sell fee: 0.000029 SOL (priority 0.000024 SOL), CU 49,391.
+- Result: Buy/sell succeeded; ATA cleanup completed after sell.
+
+Task 3 Result (bot-sniper-3 lowerfees run)
+- Log: logs/bot-sniper-3_20260119_091339.log
+- Token: PEPETEST, mint 5ijQq1qbyfY3h3uZ8rYaHrNBXokrjJXy9HDFFTiMpump
+- Buy tx: 5QFWqxpTzVcpeAMoN7D3hkgMyLFtr7E3Ao1ULrsu3bPvfGEdBGf4hp53KUFVz59xkdMKdTWLznD7HjW36dNkbNGE
+- Sell tx: RyWWeQqjd3AZq1NSGDhcVUJsrz6i5ZtkBsUCBEC77FzLdfAJp2H1TvenMbzHmKq7nDLqGwgAE2MdeQpYC3NzGAr
+- Buy fee: 0.000005 SOL (priority 0), CU 85,116.
+- Sell fee: 0.000005 SOL (priority 0), CU 47,739.
+- Result: Buy/sell succeeded; ATA cleanup completed after sell.
+
+Task 3 Result (bot-sniper-3 lowerfees run)
+- Log: logs/bot-sniper-3_20260119_092110.log
+- Token: SATWHALE, mint HxeqKTJPn74nd9gr8rZ9h95b9TZDS2y8uDaBuUtipump
+- Buy tx: 2MMHmfJCpFMR5Z18wvTNYo5kUurqVRixwsJmvumfvWKwyfPBKrKkWtwaX6yRCWSxuUBJQXb7urTmURHuHcoxC2FM
+- Sell tx: 3WpdJCRsMBzaAVaEjZCrDeXiNtDY4EE28ZcRqtbtMkRJkLn6F3n4zuUe6xXdtd4bwigi3LF2yVkJqKhbKvQgkCb6
+- Result: Buy/sell succeeded; ATA cleanup completed after sell.
+
+Task 3 Result (bot-sniper-3 tp/sl run)
+- Log: logs/bot-sniper-3_20260119_100040.log
+- Token: Leaving, mint GYc1hwX1gWjDgii3KCm7W6BdbcNcmjBrPRy1CXVspeHn
+- Buy tx: w2KMwj2jyTJATKRvRxFp88Ecy4Jyf79EXZxrT2uHaRtL9nRaAt1uFk9n4sxxMWxC3PVmhhLtpR7bxWU9VQnMNkA
+- Sell tx: 4LakWe2BnWwATGt84i4Hfe7ci5d1YdY7mHtFZypYtdm7Sj7i7SGpteTkPuYvTW4K7c5Ra1wBXPiLzygX56aFLkQM
+- Result: TP/SL not hit; exit on max_hold_time (20s); PnL ~0.00%.

@@ -2,12 +2,17 @@
 
 This repository contains a Solana trading bot for pump.fun and letsbonk.fun platforms. When working on the project interactively with an agent (e.g. the Codex CLI) please follow the guidelines below for safe development and testing.
 
+See `TASKS.md` for active task briefs and constraints. Always read it before
+making changes.
+
 ## 1. Use Learning Examples for Testing
 
 * **Always test with learning examples first** in `learning-examples/` before modifying the main bot.
 * **Do _not_ run the main bot with real funds** during agent development sessions.
 * **Test all changes** using manual buy/sell scripts with minimal amounts before production use.
 * **Use testnet** or paper trading when available to validate logic.
+* **Default test buy amount** in `learning-examples/manual_buy.py` and `learning-examples/mint_and_buy_v2.py` is `0.000001` SOL; adjust only if explicitly needed.
+* **Trend tracking**: use `learning-examples/listen-new-tokens/listen_pumpportal.py` during experiments and mirror learnings into `bots/` configs (snipers 2-7).
 
 ## 2. Keep Dependencies in Sync
 
@@ -66,9 +71,9 @@ Never commit sensitive data:
 * Use separate `.env` files for development and production.
 * Required environment variables:
   ```env
-  SOLANA_RPC_WEBSOCKET=wss://...
-  SOLANA_RPC_HTTP=https://...
-  PRIVATE_KEY=your_private_key_here
+  SOLANA_NODE_WSS_ENDPOINT=wss://...
+  SOLANA_NODE_RPC_ENDPOINT=https://...
+  SOLANA_PRIVATE_KEY=your_private_key_here
   ```
 
 ## 7. Bot Configuration Best Practices
@@ -103,10 +108,10 @@ When adding features:
 | Command                                            | Purpose                           |
 | -------------------------------------------------- | --------------------------------- |
 | `uv sync`                                          | Install/update dependencies       |
-| `source .venv/bin/activate`                       | Activate virtual environment      |
+| `.venv\\Scripts\\activate`                         | Activate virtual environment (Windows) |
 | `uv pip install -e .`                              | Install bot as editable package   |
 | `pump_bot`                                         | Run the main bot                  |
-| `uv run learning-examples/manual_buy.py`          | Test manual buy                   |
+| `uv run learning-examples/manual_buy.py`          | Test manual buy && automation sell                   |
 | `uv run learning-examples/manual_sell.py`         | Test manual sell                  |
 
 ---

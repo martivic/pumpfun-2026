@@ -244,4 +244,150 @@ As of April 30, 2025, all changes from **refactored/main-v2** are merged into th
   Get-Content CLAUDE.md
   Get-Content logs\bot-sniper-2_*.log -Wait
 
-  
+    1. Activate the venv:
+
+  .venv\Scripts\activate
+
+  2. Run the bot:
+
+  uv run src/bot_runner.py
+
+
+   Directory of C:\Users\marti\Desktop\openai\pumpfun-bonkfun-bot-main\learning-examples\bonding-curve-progress
+
+01/15/2026  10:45 AM    <DIR>          .
+01/15/2026  10:45 AM    <DIR>          ..
+01/15/2026  10:45 AM             7,129 get_bonding_curve_status.py
+01/15/2026  10:45 AM             5,671 get_graduating_tokens.py
+01/15/2026  10:45 AM             5,250 poll_bonding_curve_progress.py
+               3 File(s)         18,050 bytes
+               2 Dir(s)  67,351,740,416 bytes free
+
+C:\Users\marti\Desktop\openai\pumpfun-bonkfun-bot-main\learning-examples\bonding-curve-progress>py get_bonding_curve_status.py
+
+Token status:
+--------------------------------------------------
+Token mint:              5LCVhWUh2KZd1wZ7MefZGCjF3tvRsqMJjscJSAW9pump
+Bonding curve:           C6GgbN948q2NzQpAXeBkA7raG8BPtSvt3Y9dmaJJctLR
+Bump seed:               255
+--------------------------------------------------
+
+Bonding curve status:
+--------------------------------------------------
+Creator:             7hbvz77YRL8THaeH35bwQkpk9uommFMocJscuYBbZCKE
+Mayhem Mode:         ❌ Disabled
+Completed:           ✅ Migrated
+
+Bonding curve reserves:
+Virtual Token:       0
+Virtual SOL:         0 lamports
+Real Token:          0
+Real SOL:            0 lamports
+Total Supply:        1,000,000,000,000,000
+
+Note: This bonding curve has completed and liquidity has been migrated to PumpSwap.
+
+
+C:\Users\marti\Desktop\openai\pumpfun-bonkfun-bot-main\learning-examples>uv sync
+Resolved 36 packages in 7ms
+Audited 34 packages in 660ms
+
+C:\Users\marti\Desktop\openai\pumpfun-bonkfun-bot-main\learning-examples>uv run learning-examples/mint_and_buy_v2.py
+error: Failed to spawn: `learning-examples/mint_and_buy_v2.py`
+  Caused by: The system cannot find the path specified. (os error 3)
+
+C:\Users\marti\Desktop\openai\pumpfun-bonkfun-bot-main\learning-examples>uv run mint_and_buy_v2.py
+Creating Token2022 token with:
+  Name: Test Token V2
+  Symbol: TEST2
+  Mint: 93tmBtdw8aUUxLY81F68BRXKm9diUL6QZ2CkJDSwGmhW
+  Creator: EyU98DxvB4Rt1Hia64wyTHCnUKckmyuv4oUfnB5rYFRv
+  Mayhem mode: Enabled
+
+Derived addresses:
+  Bonding curve: 9UE8Vuk9cPdXFGtJdGDhb9Fotks7Bhfk1CtuVaTLaX3r
+  Associated bonding curve: CN7nVJPpWjMrJHc36UHR15hiKb23VTHzUq1GfzMd4JCr
+  User ATA: 2urW59o7j75yDYP9AZCGTqzvnpuZBVKbNYHJrNnyeC9s
+  Creator vault: JDebwmsHcQ9KSfTLxBHqgfgZPLef7EwME1aTtwexd892
+  Mayhem state: 6cHir4tQhZ1GJTqERLaeEsdTQnrvqmDv7kKpMKAiKnvV
+  Mayhem token vault: BgjD8rusYXjZSRtFpUCGfuJRVybouxGwF8yov6RZqstF
+
+Buy parameters:
+  Buy amount: 1e-05 SOL
+  Expected tokens: 354.090000
+  Max SOL cost: 0.000013 SOL
+Using mayhem mode fee recipient: GesfTA3X2arioaHp8bbKdjG9vJtskViWACZoYvxp4twS
+
+Sending transaction...
+Transaction sent: https://solscan.io/tx/cjpX2R1j4dKZonE6LtM3csf1VxhCqd5C2Xj9KP6SiGSuW2N1U32cnUsPyAhdAtBXCysFfqRJQr8kQHPTZeBYmKm
+Waiting for confirmation...
+Transaction confirmed!
+
+C:\Users\marti\Desktop\openai\pumpfun-bonkfun-bot-main\learning-examples>uv run manual_buy.py
+Waiting for a new token creation...
+Subscribed to blocks mentioning program: 6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P
+New token created:
+{
+  "name": "Claude",
+  "symbol": "CLAUDE",
+  "uri": "https://ipfs.io/ipfs/bafkreihyiuq2g2ntppf2o3ookobz5d4typaal34iuf6ueappquywcoupke",
+  "creator": "HkcRQUdJor2vmcSCNz33cWvNzy5eEzLjBywofLBpbnAE",
+  "is_mayhem_mode": false,
+  "mint": "BQZLpvLoPbLuXx3XTASsRn1LKaM2rniww3Yr44V1pump",
+  "bondingCurve": "Hq7HKDdNySbTmaf3HxJpwenCdNz9cfHFLkraZ3mz2BRE",
+  "associatedBondingCurve": "9Q7W6xd1t7CC54mdBvetrfs7H6ZPaNdLN8ro632236Ei",
+  "user": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+  "is_token_2022": true
+}
+Waiting for 15 seconds for things to stabilize...
+Bonding curve address: Hq7HKDdNySbTmaf3HxJpwenCdNz9cfHFLkraZ3mz2BRE
+Token Program: TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb (Token2022)
+Token price: 0.0000000280 SOL
+Buying 0.000001 SOL worth of the new token with 30.0% slippage tolerance...
+Transaction sent: https://explorer.solana.com/tx/5cr6yVhrJCNqSj6RoPLnmuvVM9JdraE4EZxDDSDV4y4LdBx5xwCzKAacrrJJBFEdW1J68tNpMg2h31QAYqMsoyX8
+Transaction confirmed
+
+
+
+
+C:\Users\marti\Desktop\openai\pumpfun-bonkfun-bot-main\learning-examples\listen-new-tokens>py listen_pumpportal.py
+Listening for new token creations...
+
+================================================================================
+🎯 NEW TOKEN DETECTED (via PumpPortal)
+================================================================================
+Name:             Grandpa Steve
+Symbol:           Grandpa
+Mint:             89Uzp7NfrNLqu9qkTjL8mtLXJ8EmttVD5brWVCdgpump
+Initial Buy:      35323.892708 SOL
+Market Cap:       27.960834 SOL
+Bonding Curve:    7sQjxPsdWHkxuUBAsWQcpjy38h1ZJD9xeBNWDttuh1jw
+Creator:          6ZZNCUK7VTbghVFiVsg3ksTdWhkXNAMtnH6df5u3EGeW
+Virtual SOL:      30.000988 SOL
+Virtual Tokens:   1,072,964,676
+URI:              https://ipfs.io/ipfs/bafkreibihvfjaicqtbe4sbpuosfn5uay7spr7bhlaswnq3rcyags2vppxe
+Signature:        5TnUksQFw2oDCgmRwQLf5Qgd9EcXbpFYPjE8uEQyfW3WWq7YudYm4XHs2aY3gFc3L1ekWa6bNFiezMhwEPxptGp6
+================================================================================
+(pump-bot) C:\Users\marti\Desktop\openai\pumpfun-bonkfun-bot-main\learning-examples>uv run manual_buy.py
+
+
+
+in\learning-examples\listen-new-tokens>uv run listen_pumpportal.py
+Listening for new token creations...
+
+================================================================================
+🎯 NEW TOKEN DETECTED (via PumpPortal)
+================================================================================
+Name:             TESTICLE
+Symbol:           $TESTICLE
+Mint:             2mwVDhNAh45R2Zgq4NVmzUwT4X8ae6EMwHtCUxo6pump
+Initial Buy:      3867868.413475 SOL
+Market Cap:       28.161658 SOL
+Bonding Curve:    4wXheNzmomyDDBTQafAFtSCC5YpqSawa1Qp5sYP7kQfT
+Creator:          HuEYTtAUvTMxCLEixvfSHtYJAffvNWGQAh7P7jawZRF3
+Virtual SOL:      30.108533 SOL
+Virtual Tokens:   1,069,132,132
+URI:              https://ipfs.io/ipfs/QmNWhAEXDdzDLdbUCuk8chWgSHmjpPTWudSnsJ9ErCs38y
+Signature:        5pGKMfXbrGkKe4Dx9B86FfYKV3Nqf5WJ3tKuemPHWoNDsnWVPdZzTXnik88ksjsrBQaDYkCapcUrrRLnUuSmcB6n
+=======================

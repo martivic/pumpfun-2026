@@ -6,24 +6,6 @@ import logging
 
 # Global dict to store loggers
 _loggers: dict[str, logging.Logger] = {}
-_ascii_filter_installed = False
-
-
-class AsciiSafeFilter(logging.Filter):
-    """Ensure log messages are ASCII-safe for Windows consoles."""
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        try:
-            message = record.getMessage()
-        except Exception:
-            return True
-
-        safe_message = message.encode("ascii", errors="backslashreplace").decode(
-            "ascii"
-        )
-        record.msg = safe_message
-        record.args = ()
-        return True
 
 
 def get_logger(name: str, level: int = logging.INFO) -> logging.Logger:
@@ -58,11 +40,6 @@ def setup_file_logging(
         level: Logging level for file handler
     """
     root_logger = logging.getLogger()
-    global _ascii_filter_installed
-
-    if not _ascii_filter_installed:
-        root_logger.addFilter(AsciiSafeFilter())
-        _ascii_filter_installed = True
 
     # Check if file handler with same filename already exists
     for handler in root_logger.handlers:

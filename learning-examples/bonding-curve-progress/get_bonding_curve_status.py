@@ -19,7 +19,7 @@ load_dotenv()
 RPC_ENDPOINT = os.environ.get("SOLANA_NODE_RPC_ENDPOINT")
 
 # Change to token you want to query
-TOKEN_MINT = "..."
+TOKEN_MINT = "5LCVhWUh2KZd1wZ7MefZGCjF3tvRsqMJjscJSAW9pump"
 
 # Constants
 PUMP_PROGRAM_ID: Final[Pubkey] = Pubkey.from_string(

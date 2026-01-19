@@ -4,7 +4,6 @@ import hashlib
 import json
 import os
 import struct
-import time
 
 import base58
 import websockets
@@ -23,20 +22,9 @@ from spl.token.instructions import (
     get_associated_token_address,
 )
 
-from manual_sell import sell_by_mint
-
 # Here and later all the discriminators are precalculated. See learning-examples/calculate_discriminator.py
 EXPECTED_DISCRIMINATOR = struct.pack("<Q", 6966180631402821399)
 TOKEN_DECIMALS = 6
-MAX_PRICE_SOL = 0.00000005
-MAX_SOL_COST = 0.00015
-TOP_HOLDER_MAX_PERCENT = 90.0
-TOP_HOLDER_RETRIES = 5
-TOP_HOLDER_RETRY_DELAY_SEC = 1.0
-PUMPPORTAL_WS_URL = "wss://pumpportal.fun/api/data"
-PUMPPORTAL_CACHE_TTL_SEC = 60
-PUMPPORTAL_WAIT_SEC = 15
-PUMPPORTAL_POLL_INTERVAL_SEC = 0.5
 
 # Global constants
 PUMP_PROGRAM = Pubkey.from_string("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P")
@@ -139,50 +127,6 @@ def calculate_pump_curve_price(curve_state: BondingCurveState) -> float:
     )
 
 
-def is_rug_pull_by_distribution(post_balances, threshold: float) -> bool:
-    if not post_balances:
-        print("Skipping buy: no post balances available")
-        return True
-
-    total_supply = sum(int(item["uiTokenAmount"]["amount"]) for item in post_balances)
-    top_holder = max(int(item["uiTokenAmount"]["amount"]) for item in post_balances)
-    percentage = (top_holder / total_supply) * 100 if total_supply else 0
-
-    print(f"Total supply: {total_supply}")
-    print(f"Top holder amount: {top_holder}")
-    print(f"Top holder percentage: {percentage:.2f}%")
-
-    if percentage >= threshold:
-        print("Skipping buy: top holder exceeds threshold")
-        return True
-
-    print("Distribution check passed")
-    return False
-
-
-async def get_top_holder_percentage(
-    conn: AsyncClient, mint: Pubkey
-) -> float | None:
-    for attempt in range(TOP_HOLDER_RETRIES):
-        response = await conn.get_token_largest_accounts(mint)
-        if response.value:
-            largest_accounts = response.value
-            total_supply = sum(
-                int(item.amount.amount)
-                for item in largest_accounts
-                if getattr(item, "amount", None) and getattr(item.amount, "amount", None)
-            )
-            if total_supply == 0:
-                return None
-            top_holder = int(largest_accounts[0].amount.amount)
-            return (top_holder / total_supply) * 100
-
-        if attempt < TOP_HOLDER_RETRIES - 1:
-            await asyncio.sleep(TOP_HOLDER_RETRY_DELAY_SEC)
-
-    return None
-
-
 def _find_creator_vault(creator: Pubkey) -> Pubkey:
     derived_address, _ = Pubkey.find_program_address(
         [b"creator-vault", bytes(creator)],
@@ -213,80 +157,6 @@ def _find_fee_config() -> Pubkey:
         PUMP_FEE_PROGRAM,
     )
     return derived_address
-
-
-async def get_creator_sol_balance(conn: AsyncClient, creator: str) -> float:
-    response = await conn.get_balance(Pubkey.from_string(creator))
-    if not response.value:
-        return 0.0
-    return response.value / LAMPORTS_PER_SOL
-
-
-async def analyze_token(token_info: dict, solana_client: AsyncClient) -> float:
-    name = token_info.get("name")
-    initial_buy = token_info.get("initialBuy", 0) or 0
-    market_cap = token_info.get("marketCapSol", 0) or 0
-    virtual_sol = token_info.get("vSolInBondingCurve", 0) or 0
-    virtual_tokens = token_info.get("vTokensInBondingCurve", 0) or 0
-    creator = token_info.get("traderPublicKey")
-
-    score = (
-        (100 / (market_cap + 1)) * 1.5
-        + (virtual_sol * 5)
-        - (initial_buy / 100000)
-    )
-
-    print(f"Analysis Score for {name}: {score:.2f}")
-
-    if creator:
-        sol_balance = await get_creator_sol_balance(solana_client, creator)
-        print(f"Creator {creator} has {sol_balance:.2f} SOL.")
-
-    return score
-
-
-async def pumpportal_listener(cache: dict, lock: asyncio.Lock) -> None:
-    while True:
-        try:
-            async with websockets.connect(PUMPPORTAL_WS_URL) as websocket:
-                await websocket.send(
-                    json.dumps({"method": "subscribeNewToken", "params": []})
-                )
-                while True:
-                    message = await websocket.recv()
-                    data = json.loads(message)
-
-                    if data.get("method") == "newToken":
-                        token_info = data.get("params", [{}])[0]
-                    elif "signature" in data and "mint" in data:
-                        token_info = data
-                    else:
-                        continue
-
-                    mint = token_info.get("mint")
-                    if not mint:
-                        continue
-
-                    async with lock:
-                        cache[mint] = (time.time(), token_info)
-        except Exception:
-            await asyncio.sleep(2)
-
-
-async def wait_for_pumpportal_token_info(
-    mint: str, cache: dict, lock: asyncio.Lock, timeout_sec: float
-) -> dict | None:
-    deadline = time.time() + timeout_sec
-    while time.time() < deadline:
-        async with lock:
-            entry = cache.get(mint)
-            if entry:
-                timestamp, token_info = entry
-                if time.time() - timestamp <= PUMPPORTAL_CACHE_TTL_SEC:
-                    return token_info
-                cache.pop(mint, None)
-        await asyncio.sleep(PUMPPORTAL_POLL_INTERVAL_SEC)
-    return None
 
 
 async def get_fee_recipient(
@@ -345,7 +215,7 @@ async def buy_token(
     amount: float,
     slippage: float = 0.25,
     max_retries=5,
-) -> bool:
+):
     private_key = base58.b58decode("3N3Lm7KEu1QdPTCuYZSvdSXEgEcEEk8b77C37X2VP8wrJHgGFLwzoKPsYxZtDCew2zr27G1EuJxWneqZzUzfFqfz")  #(os.environ.get("SOLANA_PRIVATE_KEY"))
     payer = Keypair.from_bytes(private_key)
 
@@ -429,8 +299,7 @@ async def buy_token(
             payer.pubkey(), payer.pubkey(), mint, token_program_id=token_program
         )
         msg = Message(
-            [set_compute_unit_price(10_000), idempotent_ata_ix, buy_ix],
-            payer.pubkey(),
+            [set_compute_unit_price(1_000), idempotent_ata_ix, buy_ix], payer.pubkey()
         )
         recent_blockhash = await client.get_latest_blockhash()
         opts = TxOpts(skip_preflight=True, preflight_commitment=Confirmed)
@@ -450,15 +319,8 @@ async def buy_token(
                 await client.confirm_transaction(
                     tx_hash, commitment="confirmed", sleep_seconds=1
                 )
-                status_resp = await client.get_signature_statuses([tx_hash])
-                status = status_resp.value[0] if status_resp.value else None
-                if status is None:
-                    raise RuntimeError("Missing tx status after confirmation")
-                if status.err:
-                    print(f"Buy failed on-chain: {status.err}")
-                    return False
                 print("Transaction confirmed")
-                return True
+                return  # Success, exit the function
             except Exception as e:
                 print(f"Attempt {attempt + 1} failed: {str(e)[:50]}")
                 if attempt < max_retries - 1:
@@ -467,7 +329,6 @@ async def buy_token(
                     await asyncio.sleep(wait_time)
                 else:
                     print("Max retries reached. Unable to complete the transaction.")
-        return False
 
 
 def load_idl(file_path):
@@ -581,8 +442,6 @@ async def listen_for_create_transaction():
                                             == str(PUMP_PROGRAM)
                                         ):
                                             ix_data = bytes(ix.data)
-                                            if len(ix_data) < 8:
-                                                continue
                                             discriminator = struct.unpack(
                                                 "<Q", ix_data[:8]
                                             )[0]
@@ -613,13 +472,6 @@ async def listen_for_create_transaction():
                                                 account_keys = [
                                                     account_keys[index] for index in ix.accounts
                                                 ]
-                                                post_balances = tx.get("meta", {}).get(
-                                                    "postTokenBalances", []
-                                                )
-                                                if is_rug_pull_by_distribution(
-                                                    post_balances, TOP_HOLDER_MAX_PERCENT
-                                                ):
-                                                    continue
                                                 decoded_args = (
                                                     decode_create_instruction(
                                                         ix_data, create_ix, account_keys
@@ -632,127 +484,39 @@ async def listen_for_create_transaction():
 
 
 async def main():
-    pumpportal_cache: dict = {}
-    pumpportal_lock = asyncio.Lock()
-    pumpportal_task = asyncio.create_task(
-        pumpportal_listener(pumpportal_cache, pumpportal_lock)
+    print("Waiting for a new token creation...")
+    token_data = await listen_for_create_transaction()
+    print("New token created:")
+    print(json.dumps(token_data, indent=2))
+
+    sleep_duration_sec = 15
+    print(f"Waiting for {sleep_duration_sec} seconds for things to stabilize...")
+    await asyncio.sleep(sleep_duration_sec)
+
+    mint = Pubkey.from_string(token_data["mint"])
+    bonding_curve = Pubkey.from_string(token_data["bondingCurve"])
+    associated_bonding_curve = Pubkey.from_string(token_data["associatedBondingCurve"])
+    creator_vault = _find_creator_vault(Pubkey.from_string(token_data["creator"]))
+    token_program = Pubkey.from_string(token_data["token_program"])
+
+    # Fetch the token price
+    async with AsyncClient(RPC_ENDPOINT) as client:
+        curve_state = await get_pump_curve_state(client, bonding_curve)
+        token_price_sol = calculate_pump_curve_price(curve_state)
+
+    # Amount of SOL to spend (adjust as needed)
+    amount = 0.000_001  # 0.00001 SOL
+    slippage = 0.3  # 30% slippage tolerance
+
+    print(f"Bonding curve address: {bonding_curve}")
+    print(f"Token Program: {token_program} ({'Token2022' if token_data['is_token_2022'] else 'Standard Token'})")
+    print(f"Token price: {token_price_sol:.10f} SOL")
+    print(
+        f"Buying {amount:.6f} SOL worth of the new token with {slippage * 100:.1f}% slippage tolerance..."
     )
-
-    try:
-        print("Waiting for a new token creation...")
-        token_data = await listen_for_create_transaction()
-        print("New token created:")
-        print(json.dumps(token_data, indent=2))
-        last_mint_path = os.path.join(os.path.dirname(__file__), "last_mint.txt")
-        with open(last_mint_path, "w", encoding="utf-8") as f:
-            f.write(token_data["mint"])
-        print(f"Saved mint to: {last_mint_path}")
-
-        sleep_duration_sec = 15
-        print(f"Waiting for {sleep_duration_sec} seconds for things to stabilize...")
-        await asyncio.sleep(sleep_duration_sec)
-
-        mint = Pubkey.from_string(token_data["mint"])
-        bonding_curve = Pubkey.from_string(token_data["bondingCurve"])
-        associated_bonding_curve = Pubkey.from_string(
-            token_data["associatedBondingCurve"]
-        )
-        creator_vault = _find_creator_vault(Pubkey.from_string(token_data["creator"]))
-        token_program = Pubkey.from_string(token_data["token_program"])
-
-        # Fetch PumpPortal data, token price, and top-holder data
-        async with AsyncClient(RPC_ENDPOINT) as client:
-            pumpportal_info = await wait_for_pumpportal_token_info(
-                token_data["mint"],
-                pumpportal_cache,
-                pumpportal_lock,
-                PUMPPORTAL_WAIT_SEC,
-            )
-            if pumpportal_info:
-                await analyze_token(pumpportal_info, client)
-            else:
-                print("PumpPortal data not available for analysis")
-
-            curve_state = await get_pump_curve_state(client, bonding_curve)
-            token_price_sol = calculate_pump_curve_price(curve_state)
-            top_holder_percentage = await get_top_holder_percentage(client, mint)
-
-        # Amount of SOL to spend (adjust as needed)
-        amount = 0.00001  # 0.00001 SOL
-        slippage = 0.5  # 50% slippage tolerance
-        max_sol_cost = amount * (1 + slippage)
-
-        if token_price_sol > MAX_PRICE_SOL:
-            print(
-                f"Skipping buy: price {token_price_sol:.10f} > cap {MAX_PRICE_SOL:.10f}"
-            )
-            return
-
-        if max_sol_cost > MAX_SOL_COST:
-            print(
-                f"Skipping buy: max SOL cost {max_sol_cost:.10f} > cap {MAX_SOL_COST:.10f}"
-            )
-            return
-        if top_holder_percentage is None:
-            print("Skipping buy: top holder data unavailable")
-            return
-        if top_holder_percentage >= TOP_HOLDER_MAX_PERCENT:
-            print(
-                f"Skipping buy: top holder {top_holder_percentage:.2f}% >= "
-                f"{TOP_HOLDER_MAX_PERCENT:.2f}%"
-            )
-            return
-
-        print(f"Bonding curve address: {bonding_curve}")
-        print(
-            f"Token Program: {token_program} ({'Token2022' if token_data['is_token_2022'] else 'Standard Token'})"
-        )
-        print(f"Token price: {token_price_sol:.10f} SOL")
-        print(
-            f"Buying {amount:.6f} SOL worth of the new token with {slippage * 100:.1f}% slippage tolerance..."
-        )
-        private_key = base58.b58decode(
-            "3N3Lm7KEu1QdPTCuYZSvdSXEgEcEEk8b77C37X2VP8wrJHgGFLwzoKPsYxZtDCew2zr27G1EuJxWneqZzUzfFqfz"
-        )  #(os.environ.get("SOLANA_PRIVATE_KEY"))
-        payer = Keypair.from_bytes(private_key)
-        async with AsyncClient(RPC_ENDPOINT) as client:
-            starting_balance = await client.get_balance(payer.pubkey())
-
-        buy_success = await buy_token(
-            mint,
-            bonding_curve,
-            associated_bonding_curve,
-            creator_vault,
-            token_program,
-            amount,
-            slippage,
-        )
-
-        if buy_success:
-            print("Waiting 20 seconds before auto-sell...")
-            await asyncio.sleep(20)
-            await sell_by_mint(mint)
-            async with AsyncClient(RPC_ENDPOINT) as client:
-                ending_balance = await client.get_balance(payer.pubkey())
-            if starting_balance.value is not None and ending_balance.value is not None:
-                delta_lamports = ending_balance.value - starting_balance.value
-                delta_sol = delta_lamports / LAMPORTS_PER_SOL
-                print(
-                    f"Net SOL change: {delta_sol:.9f} SOL "
-                    f"({delta_lamports} lamports)"
-                )
-                notes_path = os.path.join(
-                    os.path.dirname(__file__), "..", "notesAI.txt"
-                )
-                with open(notes_path, "a", encoding="utf-8") as notes_file:
-                    notes_file.write(
-                        "\nTask 2 Result (manual_buy auto-sell)\n"
-                        f"- Mint: {token_data['mint']}\n"
-                        f"- Net SOL change: {delta_sol:.9f} SOL "
-                        f"({delta_lamports} lamports)\n"
-                    )
-    finally:
-        pumpportal_task.cancel()
+    await buy_token(
+        mint, bonding_curve, associated_bonding_curve, creator_vault, token_program, amount, slippage
+    )
 
 
 if __name__ == "__main__":

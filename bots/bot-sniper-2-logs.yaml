@@ -8,7 +8,7 @@ rpc_endpoint: "${SOLANA_NODE_RPC_ENDPOINT}"
 wss_endpoint: "${SOLANA_NODE_WSS_ENDPOINT}"
 private_key: "${SOLANA_PRIVATE_KEY}"
 
-enabled: true # You can turn off the bot w/o removing its config
+enabled: false # You can turn off the bot w/o removing its config
 separate_process: true
 
 # Options: "pump_fun" (default), "lets_bonk"
@@ -23,16 +23,16 @@ geyser:
 # Trading parameters
 # Control trade execution: amount of SOL per trade and acceptable price deviation
 trade:
-  buy_amount: 0.00001 # Amount of SOL to spend when buying (in SOL)
-  buy_slippage: 0.1 # Maximum acceptable price deviation (0.1 = 10%)
-  sell_slippage: 0.1
+  buy_amount: 0.000008 # Amount of SOL to spend when buying (in SOL)
+  buy_slippage: 0.2 # Maximum acceptable price deviation (0.3 = 30%)
+  sell_slippage: 0.15
 
   # Exit strategy configuration
   exit_strategy: "time_based" # Options: "time_based", "tp_sl", "manual"
   take_profit_percentage: 0.4 # Take profit at 40% gain (0.4 = 40%)
   stop_loss_percentage: 0.4 # Stop loss at 40% loss (0.4 = 40%)
-  max_hold_time: 30 # Maximum hold time in seconds for TP/SL strategy, for time_based - see wait_after_buy
-  price_check_interval: 5 # Check price every 5 seconds
+  max_hold_time: 20 # Maximum hold time in seconds for TP/SL strategy, for time_based - see wait_after_buy
+  price_check_interval: 2 # Check price every 2 seconds
 
   # EXTREME FAST mode configuration
   # When enabled, skips waiting for the bonding curve to stabilize and RPC price check.
@@ -46,9 +46,9 @@ trade:
 priority_fees:
   enable_dynamic: false # Use latest transactions to estimate required fee (getRecentPrioritizationFees)
   enable_fixed: true # Use fixed amount below
-  fixed_amount: 50_000 # Base fee in microlamports
+  fixed_amount: 900_000 # Base fee in microlamports
   extra_percentage: 0.0 # Percentage increase on riority fee regardless of the calculation method (0.1 = 10%)
-  hard_cap: 50_000 # Maximum allowable fee in microlamports to prevent excessive spending
+  hard_cap: 900_000 # Maximum allowable fee in microlamports to prevent excessive spending
 
 # Compute unit limits for transaction processing
 # Operation-specific defaults are used if not specified: buy=100K, sell=60K
@@ -70,7 +70,9 @@ filters:
   match_string: null # Only process tokens with this string in name/symbol
   bro_address: null # Only trade tokens created by this user address
   listener_type: "logs" # Method for detecting new tokens: "logs", "blocks", or "geyser"
-  max_token_age: 1.0 # Maximum token age in seconds for processing
+  max_token_age: 3  # 0.001Maximum token age in seconds for processing
+  max_top_holder_pct: 90.0 # Skip tokens if top holder >= this percentage
+  skip_token2022: false # Skip Token-2022 mints to avoid authorization errors
   marry_mode: false # Only buy tokens, skip selling
   yolo_mode: false # Continuously trade tokens
 
@@ -78,8 +80,8 @@ filters:
 retries:
   max_attempts: 2 # Number of attempts for transaction submission
   wait_after_creation: 20 # Seconds to wait after token creation (only if EXTREME FAST is disabled)
-  wait_after_buy: 30 # Holding period after buy transaction
-  wait_before_new_token: 30 # Pause between token trades
+  wait_after_buy: 10 # Holding period after buy transaction
+  wait_before_new_token: 15 # Pause between token trades
 
 # Token and account management
 cleanup:

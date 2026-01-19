@@ -77,7 +77,9 @@ class UniversalTrader:
         wait_time_after_buy: int = 15,
         wait_time_before_new_token: int = 15,
         max_token_age: int | float = 0.001,
+        max_top_holder_pct: float | None = None,
         token_wait_timeout: int = 30,
+        skip_token2022: bool = False,
         # Cleanup settings
         cleanup_mode: str = "disabled",
         cleanup_force_close_with_burn: bool = False,
@@ -183,6 +185,8 @@ class UniversalTrader:
         self.wait_time_before_new_token = wait_time_before_new_token
         self.max_token_age = max_token_age
         self.token_wait_timeout = token_wait_timeout
+        self.skip_token2022 = skip_token2022
+        self.max_top_holder_pct = max_top_holder_pct
 
         # Cleanup parameters
         self.cleanup_mode = cleanup_mode
@@ -416,6 +420,20 @@ class UniversalTrader:
                 )
                 return
 
+            if self.skip_token2022 and token_info.token_program_id:
+                token_program = str(token_info.token_program_id)
+                if token_program == "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb":
+                    logger.info("Skipping Token-2022 mint.")
+                    return
+
+            if self.max_top_holder_pct is not None:
+                passes_filter = await self._passes_top_holder_filter(token_info.mint)
+                if not passes_filter:
+                    logger.info(
+                        "Skipping token due to top holder concentration filter."
+                    )
+                    return
+
             # Wait for pool/curve to stabilize (unless in extreme fast mode)
             if not self.extreme_fast_mode:
                 await self._save_token_info(token_info)
@@ -444,6 +462,30 @@ class UniversalTrader:
 
         except Exception:
             logger.exception(f"Error handling token {token_info.symbol}")
+
+    async def _passes_top_holder_filter(self, mint: Pubkey) -> bool:
+        """Return True if the token passes the top holder percentage filter."""
+        try:
+            client = await self.solana_client.get_client()
+            largest = await client.get_token_largest_accounts(mint)
+            supply = await client.get_token_supply(mint)
+
+            if not largest.value or not supply.value:
+                logger.warning("Top holder data missing; skipping token.")
+                return False
+
+            top_amount = int(largest.value[0].amount.amount)
+            total_supply = int(supply.value.amount.amount)
+            if total_supply <= 0:
+                logger.warning("Total supply is zero; skipping token.")
+                return False
+
+            top_pct = (top_amount / total_supply) * 100
+            logger.info(f"Top holder percentage: {top_pct:.2f}%")
+            return top_pct < self.max_top_holder_pct
+        except Exception as e:
+            logger.warning(f"Top holder filter failed: {e!s}")
+            return False
 
     async def _handle_successful_buy(
         self, token_info: TokenInfo, buy_result: TradeResult

@@ -16,12 +16,23 @@ For trustless monitoring, use the direct blockchain listeners (logs, block, geys
 
 import asyncio
 import json
+import sys
 from datetime import datetime
 
 import websockets
 
 # PumpPortal WebSocket URL
 WS_URL = "wss://pumpportal.fun/api/data"
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="ignore")
+
+
+def _safe_text(value):
+    if value is None:
+        return "N/A"
+    text = str(value)
+    return text.encode("ascii", "ignore").decode("ascii")
 
 
 def print_token_info(token_data):
@@ -34,9 +45,9 @@ def print_token_info(token_data):
     print("\n" + "=" * 80)
     print("🎯 NEW TOKEN DETECTED (via PumpPortal)")
     print("=" * 80)
-    print(f"Name:             {token_data.get('name', 'N/A')}")
-    print(f"Symbol:           {token_data.get('symbol', 'N/A')}")
-    print(f"Mint:             {token_data.get('mint', 'N/A')}")
+    print(f"Name:             {_safe_text(token_data.get('name'))}")
+    print(f"Symbol:           {_safe_text(token_data.get('symbol'))}")
+    print(f"Mint:             {_safe_text(token_data.get('mint'))}")
 
     # PumpPortal-specific fields
     if "initialBuy" in token_data:
@@ -48,10 +59,10 @@ def print_token_info(token_data):
         print(f"Market Cap:       {market_cap_sol:.6f} SOL")
 
     if "bondingCurveKey" in token_data:
-        print(f"Bonding Curve:    {token_data['bondingCurveKey']}")
+        print(f"Bonding Curve:    {_safe_text(token_data['bondingCurveKey'])}")
 
     if "traderPublicKey" in token_data:
-        print(f"Creator:          {token_data['traderPublicKey']}")
+        print(f"Creator:          {_safe_text(token_data['traderPublicKey'])}")
 
     # Virtual reserves
     if "vSolInBondingCurve" in token_data:
@@ -63,10 +74,10 @@ def print_token_info(token_data):
         print(f"Virtual Tokens:   {v_tokens:,.0f}")
 
     if "uri" in token_data:
-        print(f"URI:              {token_data['uri']}")
+        print(f"URI:              {_safe_text(token_data['uri'])}")
 
     if "signature" in token_data:
-        print(f"Signature:        {token_data['signature']}")
+        print(f"Signature:        {_safe_text(token_data['signature'])}")
 
     print("=" * 80 + "\n")
 

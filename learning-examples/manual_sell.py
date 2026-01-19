@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import os
 import struct
@@ -18,7 +19,7 @@ from spl.token.instructions import get_associated_token_address
 # Here and later all the discriminators are precalculated. See learning-examples/calculate_discriminator.py
 EXPECTED_DISCRIMINATOR = struct.pack("<Q", 6966180631402821399)
 TOKEN_DECIMALS = 6
-TOKEN_MINT = Pubkey.from_string("...")  # Replace with actual token mint address
+DEFAULT_LAST_MINT_FILENAME = "last_mint.txt"
 
 # Global constants
 PUMP_PROGRAM = Pubkey.from_string("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P")
@@ -40,7 +41,7 @@ LAMPORTS_PER_SOL = 1_000_000_000
 UNIT_PRICE = 10_000_000
 UNIT_BUDGET = 100_000
 
-RPC_ENDPOINT = os.environ.get("SOLANA_NODE_RPC_ENDPOINT")
+RPC_ENDPOINT = "https://solana-mainnet.core.chainstack.com/c42fc24a4f7af10e9be224e47c3ddda0"  #os.environ.get("SOLANA_NODE_RPC_ENDPOINT")
 
 
 class BondingCurveState:
@@ -203,11 +204,26 @@ def calculate_pump_curve_price(curve_state: BondingCurveState) -> float:
     )
 
 
-async def get_token_balance(conn: AsyncClient, associated_token_account: Pubkey):
-    response = await conn.get_token_account_balance(associated_token_account)
-    if response.value:
-        return int(response.value.amount)
-    return 0
+async def get_token_balance(
+    conn: AsyncClient,
+    associated_token_account: Pubkey,
+    retries: int = 3,
+    delay_sec: float = 1.0,
+):
+    for attempt in range(retries):
+        try:
+            response = await conn.get_token_account_balance(associated_token_account)
+            if response.value:
+                return int(response.value.amount)
+            return 0
+        except Exception as exc:
+            msg = str(exc)
+            if "could not find account" in msg:
+                if attempt < retries - 1:
+                    await asyncio.sleep(delay_sec)
+                    continue
+                return 0
+            raise
 
 
 async def get_token_program_id(client: AsyncClient, mint_address: Pubkey) -> Pubkey:
@@ -238,7 +254,7 @@ async def sell_token(
     slippage: float = 0.25,
     max_retries=5,
 ):
-    private_key = base58.b58decode(os.environ.get("SOLANA_PRIVATE_KEY"))
+    private_key = base58.b58decode("3N3Lm7KEu1QdPTCuYZSvdSXEgEcEEk8b77C37X2VP8wrJHgGFLwzoKPsYxZtDCew2zr27G1EuJxWneqZzUzfFqfz")  #os.environ.get("SOLANA_PRIVATE_KEY"))
     payer = Keypair.from_bytes(private_key)
 
     async with AsyncClient(RPC_ENDPOINT) as client:
@@ -356,14 +372,36 @@ async def sell_token(
                     print("Max retries reached. Unable to complete the transaction.")
 
 
-async def main():
-    # Replace these with the actual values for the token you want to sell
-    async with AsyncClient(RPC_ENDPOINT) as client:
-        token_program_id = await get_token_program_id(client, TOKEN_MINT)
+def resolve_token_mint() -> Pubkey:
+    """Resolve the token mint from CLI args or last_mint.txt."""
+    parser = argparse.ArgumentParser(description="Sell pump.fun token")
+    parser.add_argument("mint", nargs="?", help="Token mint address")
+    args = parser.parse_args()
 
-    bonding_curve, _ = get_bonding_curve_address(TOKEN_MINT)
+    if args.mint:
+        return Pubkey.from_string(args.mint)
+
+    last_mint_path = os.path.join(os.path.dirname(__file__), DEFAULT_LAST_MINT_FILENAME)
+    if os.path.exists(last_mint_path):
+        with open(last_mint_path, "r", encoding="utf-8") as f:
+            mint = f.read().strip()
+        if mint:
+            return Pubkey.from_string(mint)
+
+    msg = (
+        "No mint provided. Pass a mint address or run manual_buy.py to "
+        f"create {DEFAULT_LAST_MINT_FILENAME}."
+    )
+    raise ValueError(msg)
+
+
+async def sell_by_mint(token_mint: Pubkey) -> None:
+    async with AsyncClient(RPC_ENDPOINT) as client:
+        token_program_id = await get_token_program_id(client, token_mint)
+
+    bonding_curve, _ = get_bonding_curve_address(token_mint)
     associated_bonding_curve = find_associated_bonding_curve(
-        TOKEN_MINT, bonding_curve, token_program_id
+        token_mint, bonding_curve, token_program_id
     )
 
     async with AsyncClient(RPC_ENDPOINT) as client:
@@ -371,18 +409,23 @@ async def main():
 
     creator_vault = find_creator_vault(curve_state.creator)
 
-    slippage = 0.25  # 25% slippage tolerance
+    slippage = 0.5  # 50% slippage tolerance
 
     print(f"Bonding curve address: {bonding_curve}")
     print(f"Selling tokens with {slippage * 100:.1f}% slippage tolerance...")
     await sell_token(
-        TOKEN_MINT,
+        token_mint,
         bonding_curve,
         associated_bonding_curve,
         creator_vault,
         token_program_id,
         slippage,
     )
+
+
+async def main() -> None:
+    token_mint = resolve_token_mint()
+    await sell_by_mint(token_mint)
 
 
 if __name__ == "__main__":

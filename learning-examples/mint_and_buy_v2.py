@@ -22,8 +22,8 @@ from spl.token.instructions import (
 # Configuration for the token to be created
 TOKEN_NAME = "Test Token V2"
 TOKEN_SYMBOL = "TEST2"
-TOKEN_URI = "https://example.com/token-v2.json"
-BUY_AMOUNT_SOL = 0.00001  # Amount of SOL to spend on buying
+TOKEN_URI = "https://tccryptobot.web.app/metadata/test2.json"
+BUY_AMOUNT_SOL = 0.000001  # Amount of SOL to spend on buying
 MAX_SLIPPAGE = 0.3  # 30% slippage
 PRIORITY_FEE_MICROLAMPORTS = 37_037  # Priority fee in microlamports
 COMPUTE_UNIT_LIMIT = 350_000  # Compute unit limit for the transaction
